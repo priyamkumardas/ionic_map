@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 declare var google: any;
 
 @Component({
@@ -19,7 +20,7 @@ export class HomePage {
   DirectionsWaypoint;
   
 
-  constructor(private geo: Geolocation) {}
+  constructor(private geo: Geolocation,private androidPermissions: AndroidPermissions) {}
 
   ionViewDidEnter() {
     this.getMyLocation();
@@ -87,19 +88,29 @@ export class HomePage {
  
 
   getMyLocation() {
+
+
+    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.ACCESS_COARSE_LOCATION).then(
+      result => console.log('Has permission?',result.hasPermission),
+      err => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.ACCESS_COARSE_LOCATION)
+    );
+
+
+
     var i;
     this.geo.getCurrentPosition({
       enableHighAccuracy: true
     }).then(location => {
       this.lat = location.coords.latitude;
       this.lng = location.coords.longitude
-      this.loadMap();
+      //this.loadMap();
 
       this.DirectionsWaypoint = [
         
         {
           
-          location:{lat: 22.577891, lng: 88.424393},
+          location:{lat: 22.571232, lng: 88.425483},
+          //22.571232, 88.425483
           //lat: 22.571104, lng: 88.426095,
           stopover: false
         },{
@@ -113,12 +124,14 @@ export class HomePage {
       ];
       // for (i = 0; i < locations.length-1; i++) { 
       //   this.location_source=locations[i];
-        this.location_source="22.572451, 88.422748";
+        this.location_source="22.557784, 88.411544";
         this.location_destination= "22.576416, 88.430268";
         //this.location_destination=locations[i+1];
         //console.log(this.location_source+" "+this.location_destination);
       this.calculateAndDisplayRoute();
       //}
+    }).catch((error) => {
+      console.log('Error getting location', error);
     })
   }
 
@@ -139,6 +152,7 @@ export class HomePage {
       if (status === 'OK') {
         console.log(response);
         that.directionsDisplay.setDirections(response);
+        this.loadMap();
       } else {
         window.alert('Directions request failed due to ' + status);
       }
